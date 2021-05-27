@@ -182,11 +182,14 @@ def addGradeStudent():
 @app.route('/downloadgrades', methods=['GET'])
 def downloadGrades():
     try:
-        exam_exists = False
+        item_bo = ""
+        user_exists = False
         id_student = request.json['id_student']
         query = mongo.db.students.find({"key_generated":id_student})
         for item in query:
-            exam_exists = True
+            item_bo = item
+            user_exists = True
+        if user_exists:
             response = json_util.dumps(item) 
             grades = json.loads(response)
             grades = grades['grades']
@@ -194,7 +197,8 @@ def downloadGrades():
                 print(grade)
             grades = json_util.dumps(grades) 
             return grades
-
+        else:
+            return {"message":"This ID don't EXIST put a good one!"}
     except:
         return notFound()
 
