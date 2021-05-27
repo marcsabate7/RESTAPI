@@ -1,6 +1,7 @@
 from flask import Flask,request,jsonify,Response
 from flask_pymongo import PyMongo
 from bson import json_util
+import json
 
 
 app = Flask(__name__)
@@ -15,11 +16,29 @@ mongo = PyMongo(app)
 
 
 @app.route('/exams', methods=['GET'])
-def list_exams():
-    exams = mongo.db.exams.find()           
-    response = json_util.dumps(exams)   
+def listExams():
+    try:
+        id_exam = request.json['id_exam']
+        exams = mongo.db.exams.find({'key_generated':id_exam})           
+        response = json_util.dumps(exams) 
+    except:
+        exams = mongo.db.exams.find()           
+        response = json_util.dumps(exams)   
 
     return Response(response,mimetype='application/json')
+
+@app.route('/examsearch', methods=['GET'])
+def foundExams():
+    exist_exam = False
+    key_search = request.json['key_search']
+    query = mongo.db.exams.createIndex({key_search : 1})
+
+    for item in query:
+        exist_exam = True
+        return {"message":"EXAM FOUND"}
+    return {"message":"NOT"}
+
+
 
 @app.route('/exam', methods=['POST'])
 def createExam():
@@ -157,6 +176,25 @@ def addGradeStudent():
             })
             response.status_code = 404
             return response
+    except:
+        return notFound()
+
+@app.route('/downloadgrades', methods=['GET'])
+def downloadGrades():
+    try:
+        exam_exists = False
+        id_student = request.json['id_student']
+        query = mongo.db.students.find({"key_generated":id_student})
+        for item in query:
+            exam_exists = True
+            response = json_util.dumps(item) 
+            grades = json.loads(response)
+            grades = grades['grades']
+            for grade in grades:
+                print(grade)
+            grades = json_util.dumps(grades) 
+            return grades
+
     except:
         return notFound()
 
