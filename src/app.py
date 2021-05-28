@@ -46,36 +46,30 @@ def createExam():
     # The unique key generated for the new uploaded exam is the id_exam referenced in all code
     try:
         name_exam = request.json['name_exam']
-        query = mongo.db.exams.find({"name_exam":name_exam})
-        for item in query:
-            count+=1
-        if count !=0:
-            return {"message":"This exam is already added to the database, try another name"}
-        else:
-            description = request.json['description']
-            date = request.json['date']
-            time = request.json['time']
-            location = request.json['location']
+        description = request.json['description']
+        date = request.json['date']
+        time = request.json['time']
+        location = request.json['location']
 
-            total_exams = mongo.db.exams.count()+1
-            id = mongo.db.exams.insert(
-                {'key_generated': total_exams,'name_exam':name_exam, 'description':description,'date':date,'time':time,'location':location}
-            )
+        total_exams = mongo.db.exams.count()+1
+        id = mongo.db.exams.insert(
+            {'key_generated': total_exams,'name_exam':name_exam, 'description':description,'date':date,'time':time,'location':location}
+        )
         
-            response = jsonify({
-                'name':name_exam,
-                'description':description,
-                'date':date,
-                'time':time,
-                'location':location,
-                'key_generated':total_exams,
-                'status_query': 'OK DONE'
-            })
-            return response
+        response = jsonify({
+            'name':name_exam,
+            'description':description,
+            'date':date,
+            'time':time,
+            'location':location,
+            'key_generated':total_exams,
+            'status_query': 'OK DONE'
+        })
+        return response
     except:   
         return notFound()
 
-@app.route('/modifydescription', methods=['POST'])
+@app.route('/modifydescription', methods=['PUT'])
 def modifyDescriptionExam():
     try:
         exam_exists = False
@@ -85,10 +79,9 @@ def modifyDescriptionExam():
         for item in query:
             exam_exists = True
         if exam_exists and id_exam!= "" and description != "":
-            mongo.db.exams.update_one({
-                "key_generated":id_exam
-            },
-            {"$set": {'description':description}})
+            mongo.db.exams.update_one(
+                {"key_generated":id_exam},
+                {"$set": {'description':description}})
 
             return {"message":"Description modifyed correctly for exam with ID: "+str(id_exam)}
 
@@ -127,7 +120,7 @@ def deleteExam():
 #            STUDENTS
 ######################################
 
-@app.route('/user', methods=['POST'])
+@app.route('/student', methods=['POST'])
 def createStudent():
     count = 0
     try:
