@@ -29,15 +29,22 @@ def listExams():
 
 @app.route('/examsearch', methods=['GET'])
 def foundExams():
-    exist_exam = False
-    key_search = request.json['key_search']
-    query = mongo.db.exams.createIndex({key_search : 1})
-
-    for item in query:
-        exist_exam = True
-        return {"message":"EXAM FOUND"}
-    return {"message":"NOT"}
-
+    try:
+        exist_exam = False
+        list_exams = ["EXAMS FOUND!"]
+        key_search = request.json['key_search']
+        query = mongo.db.exams.find()
+        for item in query:
+            if item['name_exam'].find(key_search) !=-1 or item['description'].find(key_search) != -1:
+                list_exams.append(item)
+                exist_exam = True
+        if exist_exam:
+            print(list_exams)  
+            all_exams = '\n\n'.join(str(elem) for elem in list_exams)
+            return all_exams
+        return {"message":"Any exam was found with the KEY introduced!"}
+    except:
+        return notFound()
 
 
 @app.route('/exam', methods=['POST'])
@@ -218,9 +225,9 @@ def modifyGrade():
                     {"$set": {'grades':all_grades}})
                 return {"message":"Grade: " + str(grade_st) + " for ID student: "+ str(id_student) + " and ID exam: " + str(id_exam) + " was updated succesfully!!"}
             else:    
-                return {"message":"The id_exam doesn't match with the id_student grades"}
+                return {"message":"The id_exam doesn't match with the id_student grades OR the id_student doesn't exist"}
         else:
-            return {"message":"Doesn't exist an exam with this ID or some JSON fields are in blank"}
+            return {"message":"Doesn't exist an exam with this ID (create a grade before) or some JSON fields are in blank"}
     
     except:
         return notFound()
@@ -252,11 +259,12 @@ def downloadGrades():
 @app.errorhandler(404)
 def notFound(error=None):
     response = jsonify({
-        'message': 'Resource Not Found, you miss some data to the JSON, requested url: ' + request.url,
+        'message': 'Resource Not Found, you probably miss some data to the JSON (incorrect name of params), requested url: ' + request.url,
         'status': 404,
     })
     response.status_code = 404
     return response
+
 
 if __name__ == "__main__":
     app.run(debug=True)
