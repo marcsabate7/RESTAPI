@@ -254,10 +254,13 @@ def downloadGrades():
             response = json_util.dumps(item) 
             grades = json.loads(response)
             grades = grades['grades']
-            for grade in grades:
-                print(grade)
-            grades = json_util.dumps(grades) 
-            return grades
+            '''for grade in grades:
+                print(grade)'''
+            grades_final = json_util.dumps(grades)
+            if(len(grades) == 0):
+                return {"message":"The student doesn't have any grade!"}
+            else:
+                return grades_final
         else:
             return {"message":"This id_student don't EXIST put a good one!"}
     except:
