@@ -3,7 +3,7 @@ from flask_pymongo import PyMongo
 from bson import json_util
 import json
 
-
+# Initiating Flask app
 app = Flask(__name__)
 app.config['MONGO_URI'] = 'mongodb://localhost:27017/DatabaseRESTAPI'
 mongo = PyMongo(app)
@@ -15,6 +15,7 @@ mongo = PyMongo(app)
 ######################################
 
 
+# Listing exams by id or all exams
 @app.route('/exams', methods=['GET'])
 def listExams():
     try:
@@ -27,6 +28,7 @@ def listExams():
 
     return Response(response,mimetype='application/json')
 
+# Searching exams by key or partial key 
 @app.route('/examsearch', methods=['GET'])
 def foundExams():
     try:
@@ -46,7 +48,7 @@ def foundExams():
     except:
         return notFound()
 
-
+# Add exam
 @app.route('/exam', methods=['POST'])
 def createExam():
     count = 0
@@ -76,6 +78,7 @@ def createExam():
     except:   
         return notFound()
 
+# Modify description
 @app.route('/modifydescription', methods=['PUT'])
 def modifyDescriptionExam():
     try:
@@ -102,13 +105,14 @@ def modifyDescriptionExam():
     except:
         return notFound()
 
+# Delete exam
 @app.route('/deletexam', methods=['DELETE'])
 def deleteExam():
     try:
         exam_exists = False
         id_exam = request.json['id_exam']
         query = mongo.db.students.find({"grades":{"$elemMatch":{"id_exam":id_exam}}})
-        for item in query:
+        for item in query:              # Comproving if any student have grades of this id_exam
             print(item)
             return {"message":"CAN'T delete this exam because some students have grades in it"}
         
@@ -123,10 +127,13 @@ def deleteExam():
     except:
         return notFound()
 
+
 ######################################
 #            STUDENTS
 ######################################
 
+
+# Create student
 @app.route('/student', methods=['POST'])
 def createStudent():
     count = 0
@@ -150,7 +157,7 @@ def createStudent():
     except:   
         return notFound()
 
-
+# Add grade to student
 @app.route('/addgrade', methods=['PUT'])
 def addGradeStudent():
     try:
@@ -193,7 +200,7 @@ def addGradeStudent():
     except:
         return notFound()
 
-
+# Modify grades from student
 @app.route('/modifygrade', methods=['PUT'])
 def modifyGrade():
     try:
@@ -232,6 +239,7 @@ def modifyGrade():
     except:
         return notFound()
 
+# Download grades from a student
 @app.route('/downloadgrades', methods=['GET'])
 def downloadGrades():
     try:
@@ -256,6 +264,7 @@ def downloadGrades():
         return notFound()
 
 
+# Not Found function called when some parameters fault
 @app.errorhandler(404)
 def notFound(error=None):
     response = jsonify({
@@ -264,6 +273,7 @@ def notFound(error=None):
     })
     response.status_code = 404
     return response
+
 
 
 if __name__ == "__main__":
